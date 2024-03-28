@@ -1,6 +1,7 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-require('dotenv').config();
+const Blog = require('./models/blog');
 
 
 // Create an instance of the Express application
@@ -12,14 +13,23 @@ app.set('view engine', 'ejs');
 // Serve static files (CSS, JavaScript, images) from the 'public' directory
 app.use(express.static('public'));
 
+//
+app.use(express.urlencoded({ extended: true }));
+
 // Connect Mongoose to the Mongodb
 mongoose.connect(process.env.URI)
   .then(result => app.listen(3000))
   .catch(err => console.log(err));
 
 
-// Home page route
-app.get('/', (req, res) => res.render('index', { title: 'Home' }));
+// Home page
+// app.get('/', (req, res) => res.render('index', { title: 'Home' }));
+
+app.get('/', (req, res) => {
+  Blog.find()
+    .then(result => res.render('index', { title: 'Home', blogs: result }))
+    .catch(err => console.log(err));
+});
 
 // About page route
 app.get('/about', (req, res) => res.render('about', { title: 'About' }));
@@ -27,3 +37,10 @@ app.get('/about', (req, res) => res.render('about', { title: 'About' }));
 // Create page route
 app.get('/blogs/create', (req, res) => res.render('create', { title: 'Create Blog' }));
 
+//
+app.post('/blogs/create', (req, res) => {
+  const blog = new Blog(req.body);
+  blog.save()
+    .then(result => res.redirect('/'))
+    .catch(err => console.log(err));
+});
