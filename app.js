@@ -23,8 +23,6 @@ mongoose.connect(process.env.URI)
 
 
 // Home page
-// app.get('/', (req, res) => res.render('index', { title: 'Home' }));
-
 app.get('/', (req, res) => {
   Blog.find()
     .then(result => res.render('index', { title: 'Home', blogs: result }))
@@ -34,13 +32,34 @@ app.get('/', (req, res) => {
 // About page route
 app.get('/about', (req, res) => res.render('about', { title: 'About' }));
 
-// Create page route
+// Create blog page route
 app.get('/blogs/create', (req, res) => res.render('create', { title: 'Create Blog' }));
 
-//
+// 
 app.post('/blogs/create', (req, res) => {
   const blog = new Blog(req.body);
   blog.save()
     .then(result => res.redirect('/'))
+    .catch(err => console.log(err));
+});
+
+//
+app.get('/blogs/:id', (req, res) => {
+
+  const id = req.params.id;
+
+  Blog.findById(id)
+    .then(result => res.render('details', { title: 'Blog Detail', blog: result }))
+    .catch(err => console.log(err));
+
+});
+
+//
+app.delete('/blogs/:id', (req, res) => {
+
+  const id = req.params.id;
+
+  Blog.findByIdAndDelete(id)
+    .then(result => res.json({ redirect: '/' }))
     .catch(err => console.log(err));
 });
