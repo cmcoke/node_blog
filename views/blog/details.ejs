@@ -1,0 +1,51 @@
+<html lang="en">
+
+<%- include('../partials/head.ejs') %>
+
+<body>
+
+  <%- include('../partials/nav.ejs') %>
+
+  <div class="details content">
+
+    <!-- Display the blog's title and body -->
+    <div class="content">
+      <h2><%= blog.title %></h2>
+      <p><%= blog.body %></p>
+    </div>
+
+    <!-- Creating a delete link with the blog's id as a data attribute named delete -->
+    <a class="delete" data-delete="<%=  blog._id %>">
+      <img src="/trashcan.svg" alt="delete can">
+    </a>
+  </div>
+
+  <%- include('../partials/footer.ejs') %>
+
+</body>
+
+<!-- Adding a script tag for client-side JavaScript -->
+<script>
+  const delBtn = document.querySelector('a.delete');
+
+  delBtn.addEventListener('click', e => {
+
+    // e.preventDefault();
+
+    // Creating the endpoint for the fetch request using the blog's id
+    const endpoint = `${delBtn.dataset.delete}`
+
+    // console.log(endpoint);
+
+    // Making a DELETE request to the server using the fetch API
+    fetch(endpoint, {
+        method: 'DELETE'
+      })
+      .then(response => response.json()) // Parsing the response as JSON
+      .then(data => window.location.href = data.redirect) // Redirecting to the URL ( '/' ) specified in the response ( which was created in delete_blog_post() in the controllers/blogControllers.js file  )
+      .catch(err => console.log(err));
+
+  })
+</script>
+
+</html>

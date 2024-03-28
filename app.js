@@ -1,65 +1,31 @@
-require('dotenv').config();
+require('dotenv').config(); // Load environment variables from .env file (if it exists)
 const express = require('express');
 const mongoose = require('mongoose');
-const Blog = require('./models/blog');
-
+const blogRoutes = require('./routes/blogRoutes');
 
 // Create an instance of the Express application
 const app = express();
 
-// Set the view engine to EJS (Embedded JavaScript)
+// Set EJS as the templating engine
 app.set('view engine', 'ejs');
 
 // Serve static files (CSS, JavaScript, images) from the 'public' directory
 app.use(express.static('public'));
 
-//
+// Parse incoming form data (URL encoded)
 app.use(express.urlencoded({ extended: true }));
 
-// Connect Mongoose to the Mongodb
+// Connect to MongoDB database using URI from environment variable
 mongoose.connect(process.env.URI)
-  .then(result => app.listen(3000))
-  .catch(err => console.log(err));
+  .then(result => app.listen(3000)) // Start server on port 3000 if connection successful
+  .catch(err => console.log(err)); // Log any errors during connection attempt
 
 
-// Home page
-app.get('/', (req, res) => {
-  Blog.find()
-    .then(result => res.render('index', { title: 'Home', blogs: result }))
-    .catch(err => console.log(err));
-});
+// Use routes defined in blogRoutes for requests starting with '/' path
+app.use('/', blogRoutes);
 
-// About page route
+// Handle requests for the '/about' route and render the 'about' view
 app.get('/about', (req, res) => res.render('about', { title: 'About' }));
 
-// Create blog page route
-app.get('/blogs/create', (req, res) => res.render('create', { title: 'Create Blog' }));
-
-// 
-app.post('/blogs/create', (req, res) => {
-  const blog = new Blog(req.body);
-  blog.save()
-    .then(result => res.redirect('/'))
-    .catch(err => console.log(err));
-});
-
-//
-app.get('/blogs/:id', (req, res) => {
-
-  const id = req.params.id;
-
-  Blog.findById(id)
-    .then(result => res.render('details', { title: 'Blog Detail', blog: result }))
-    .catch(err => console.log(err));
-
-});
-
-//
-app.delete('/blogs/:id', (req, res) => {
-
-  const id = req.params.id;
-
-  Blog.findByIdAndDelete(id)
-    .then(result => res.json({ redirect: '/' }))
-    .catch(err => console.log(err));
-});
+// Handle any unmatched routes and render a 404 Not Found page
+app.use((req, res) => res.status(404).render('404', { title: 'Not Found' }));
